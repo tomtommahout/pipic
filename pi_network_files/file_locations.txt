@@ -1,0 +1,9 @@
+http://imti.co/post/145442415333/raspberry-pi-3-wifi-station-ap
+
+WPA configuration/etc/wpa_supplicant/wpa_supplicant.conf
+Network interfaces/etc/network/interfaces
+Hostapd config/etc/hostapd/hostapd.conf
+Hostapd default/etc/default/hostapd
+AP startup script/usr/local/bin/hostapdstart
+DNS/etc/dnsmasq.conf
+Startup script/etc/rc.local

@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-import Image
+from PIL import Image
 import os, sys, argparse
 import subprocess
 import time
 import math
-import zmq
+##import zmq
 import io, picamera
 from fractions import Fraction
 
@@ -326,9 +326,9 @@ class timelapse(object):
     elapsed = time.time() - start_time
 
     #Set up broadcast for zmq.
-    self.context = zmq.Context()
-    self.socket = self.context.socket(zmq.PUB)
-    self.socket.bind("tcp://*:5556")
+##    self.context = zmq.Context()
+##    self.socket = self.context.socket(zmq.PUB)
+##    self.socket.bind("tcp://*:5556")
 
     while ((elapsed < config.maxtime or config.maxtime == -1) 
            and (state.shots_taken < config.maxshots
@@ -339,7 +339,7 @@ class timelapse(object):
       #Broadcast options for this picture on zmq.
       command='0 shoot {} {} {} {}'.format(config.w, config.h, 
                                            state.currentss, dtime)
-      self.socket.send(command)
+##      self.socket.send(command)
 
       #Take a picture.
       filename = ('/home/pi/pictures/%s_%s.jpg' % (self.hostname, dtime))
@@ -352,41 +352,41 @@ class timelapse(object):
       #Wait for next shot.
       time.sleep(max([0, config.interval - (loopend - loopstart)]))
 
-    self.socket.close()
+##    self.socket.close()
 
-  def listen(self):
-    """
-    Run the timelapser in listen mode.  Listens for ZMQ messages and shoots
-    accordingly.
-    """
-    #  Socket to talk to server
-    context = zmq.Context()
-    socket = context.socket(zmq.SUB)
-    socket.connect("tcp://192.168.0.1:5556")
-    channel = "0"
-    socket.setsockopt(zmq.SUBSCRIBE, channel)
-
-    #Get hostname
-    f=open('/etc/hostname')
-    hostname=f.read().strip().replace(' ','')
-    f.close()
-
-    while True:
-      command = socket.recv()
-      command = command.split(" ")
-      print "Message recieved: " + str(command)
-      if command[1] == "quit":
-        break
-      elif command[1] == "shoot":
-        # TODO: This is currently ignoring the various config params from
-        # the sender...
-        [ch, com, w, h, ss, iso, dtime] = command
-        filename = ('/home/pi/pictures/%s_%s.jpg' % (hostname, dtime))
-        self.shoot(filename)
-        self.print_stats
-
-    socket.close()
-    return True
+##  def listen(self):
+##    """
+##    Run the timelapser in listen mode.  Listens for ZMQ messages and shoots
+##    accordingly.
+##    """
+##    #  Socket to talk to server
+##    context = zmq.Context()
+##    socket = context.socket(zmq.SUB)
+##    socket.connect("tcp://192.168.0.1:5556")
+##    channel = "0"
+##    socket.setsockopt(zmq.SUBSCRIBE, channel)
+##
+##    #Get hostname
+##    f=open('/etc/hostname')
+##    hostname=f.read().strip().replace(' ','')
+##    f.close()
+##
+##    while True:
+##      command = socket.recv()
+##      command = command.split(" ")
+##      print "Message recieved: " + str(command)
+##      if command[1] == "quit":
+##        break
+##      elif command[1] == "shoot":
+##        # TODO: This is currently ignoring the various config params from
+##        # the sender...
+##        [ch, com, w, h, ss, iso, dtime] = command
+##        filename = ('/home/pi/pictures/%s_%s.jpg' % (hostname, dtime))
+##        self.shoot(filename)
+##        self.print_stats
+##
+##    socket.close()
+##    return True
 
 
 #-------------------------------------------------------------------------------
@@ -396,9 +396,9 @@ def main(argv):
 
 
     parser = argparse.ArgumentParser(description='Timelapse tool for the Raspberry Pi.')
-    parser.add_argument( '-W', '--width', default=1286, type=int, help='Set image width.' )
-    parser.add_argument( '-H', '--height', default=972, type=int, help='Set image height.' )
-    parser.add_argument( '-i', '--interval', default=15, type=int, help='Set photo interval in seconds.  \nRecommended miniumum is 6.' )
+    parser.add_argument( '-W', '--width', default=3280, type=int, help='Set image width.' )
+    parser.add_argument( '-H', '--height', default=2464, type=int, help='Set image height.' )
+    parser.add_argument( '-i', '--interval', default=900, type=int, help='Set photo interval in seconds.  \nRecommended miniumum is 6.' )
     parser.add_argument( '-t', '--maxtime', default=-1, type=int, help='Maximum duration of timelapse in minutes.\nDefault is -1, for no maximum duration.' )
     parser.add_argument( '-n', '--maxshots', default=-1, type=int, help='Maximum number of photos to take.\nDefault is -1, for no maximum.' )
     parser.add_argument( '-b', '--brightness', default=128, type=int, help='Target average brightness of image, on a scale of 1 to 255.\nDefault is 128.' )
