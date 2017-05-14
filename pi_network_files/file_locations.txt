@@ -7,3 +7,24 @@ Hostapd default/etc/default/hostapd
 AP startup script/usr/local/bin/hostapdstart
 DNS/etc/dnsmasq.conf
 Startup script/etc/rc.local
+
+
+Turn off LEDs to stop reflection
+
+#https://www.jeffgeerling.com/blogs/jeff-geerling/controlling-pwr-act-leds-raspberry-pi
+
+Raspberry Pi Zero
+The Pi Zero's values are opposite, and it only has one LED, led0 (labeled 'ACT' on the board). The LED defaults to on (brightness 0), and turns off (brightness 1) to indicate disk activity.
+
+If you want to turn off the LED on the Pi Zero completely, run the following two commands:
+
+# Set the Pi Zero ACT LED trigger to 'none'.
+echo none | sudo tee /sys/class/leds/led0/trigger
+
+# Turn off the Pi Zero ACT LED.
+echo 1 | sudo tee /sys/class/leds/led0/brightness
+To make these settings permanent, add the following lines to your Pi's /boot/config.txt file and reboot:
+
+# Disable the ACT LED on the Pi Zero.
+dtparam=act_led_trigger=none
+dtparam=act_led_activelow=on
