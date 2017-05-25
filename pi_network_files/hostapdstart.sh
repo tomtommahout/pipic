@@ -8,5 +8,5 @@ sudo iptables -t nat -A POSTROUTING -s 192.168.50.0/24 ! -d 192.168.50.0/24 -j M
 ifup uap0
 sudo hostapd -B /etc/hostapd/hostapd.conf
 #sudo service networking restart
-#sleep 10
+sleep 240
 sudo python /home/pi/git/pipic/timelapse.py 
