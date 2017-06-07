@@ -444,6 +444,7 @@ def main(argv):
         'targetBrightness': args.brightness,
         'maxdelta': args.delta,
         'iso': args.iso,
+        'metering': args.metering,
         # Add more configuration options here, if desired.
     }
 
