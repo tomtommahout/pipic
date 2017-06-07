@@ -1,0 +1,78 @@
+## change wifi channel so ap and client match
+#install i2c helper programs
+
+sudo apt-get install -y python-smbus
+sudo apt-get install -y i2c-tools
+
+#ensure i2c is enabled in kernal
+sudo raspi-config
+#advanced > I2C > enable
+
+#power off
+#add board to pins 1-7
+
+sudo shutdown -h now
+
+#Verify board is visible
+sudo i2cdetect -y 1
+#record ID no
+
+#Setting the RTC Clock
+
+#The RTC module must be loaded by the kernel by running:
+
+sudo modprobe rtc-ds1307
+#Now you need to be running as the super user; type in:
+
+sudo bash
+#and then, if you have a Rev.2 Pi or later:
+
+echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+#Or if you have the older Rev.1 Pi, use:
+
+echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-0/new_device
+#Type exit to stop being the 'root' user.
+
+#Check the time on the RTC device using:
+
+sudo hwclock -r
+
+#If this is the first time the module has been used, it will report back Jan 1 2000,
+#and you'll need to set the time to the current time.
+
+#The easiest way is to connect it up to Ethernet or Wifi.
+#It will automatically set the time from the network. You can check the time using the command:
+date
+
+#Run
+sudo hwclock -w
+#to write the system time to the RTC board.
+
+#You can then verify it with
+sudo hwclock -r
+
+
+#Making Your Pi Use the Real Time Clock
+
+#You will need to add the RTC kernel module to the file /etc/modules
+#so it is loaded when the Pi boots. In a terminal window run
+sudo nano /etc/modules
+#and add
+rtc-ds1307
+#at the end of the file.
+
+#Next you will need to add the DS1307 device creation at boot by editing the /etc/rc.local file by running
+
+sudo nano /etc/rc.local
+#and add the following lines to the file:
+
+echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+sudo hwclock -s
+date
+
+#Just before the exit 0.
+
+#To test this out, shutdown your Pi, unplug any ethernet cable or wifi dongle and then turn the Pi back on.
+#Use the following command in a terminal window to check the date is still set:
+
+date
