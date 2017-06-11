@@ -6,8 +6,19 @@ import subprocess
 import time
 import math
 ##import zmq
+import logging
 import io, picamera
 from fractions import Fraction
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+log_file_handler = logging.FileHandler('timelapse_log.log')
+log_file_handler.setFormatter(formatter)
+logger.addHandler(log_file_handler)
+
+# logging.basicConfig(filename='timelapse_log.log', level=logging.DEBUG,
+#                     format='%(asctime)s:%(levelname)s:%(message)s')
 
 class timelapse_config(object):
   """Config Options:
@@ -129,7 +140,7 @@ class timelapse(object):
       try:
         camera.led = False
       except Exception as e:
-        print "Failed to disable LED: " + e
+        logger.debug ("Failed to disable LED: " + e)
 
     f=open('/etc/hostname')
     hostname = f.read().strip().replace(' ','')
@@ -139,11 +150,11 @@ class timelapse(object):
     # We consider shutterspeeds as a floating point number between 0 and 1,
     # denoting position between the max and min shutterspeed.
     # These two functions let us convert back and forth between representations.
-    
+
     self.state = timelapse_state(config)
     self.camera.framerate = self.state.framerate
 
-    print 'Finding initial SS....'
+    logger.info ('Finding initial SS....')
     # Give the camera's auto-exposure and auto-white-balance algorithms
     # some time to measure the scene and determine appropriate values
     time.sleep(2)
@@ -153,17 +164,17 @@ class timelapse(object):
     self.state.currentss=self.camera.exposure_speed
     self.camera.exposure_mode = 'off'
     self.state.wb_gains = self.camera.awb_gains
-    print 'WB: ', self.state.wb_gains
+    logger.debug ('WB: ', self.state.wb_gains)
     self.camera.awb_mode = 'off'
     self.camera.awb_gains = self.state.wb_gains
 
     self.findinitialparams(self.config, self.state)
-    print "Set up timelapser with: "
-    print "\tmaxtime :\t", config.maxtime
-    print "\tmaxshots:\t", config.maxshots
-    print "\tinterval:\t", config.interval
-    print "\tBrightns:\t", config.targetBrightness
-    print "\tSize  :\t", config.w, 'x', config.h    
+    logger.debug ("Set up timelapser with: ")
+    logger.debug ("\tmaxtime :\t", config.maxtime)
+    logger.debug ("\tmaxshots:\t", config.maxshots)
+    logger.debug ("\tinterval:\t", config.interval)
+    logger.debug ("\tBrightns:\t", config.targetBrightness)
+    logger.debug ("\tSize  :\t", config.w, 'x', config.h)
 
   def __repr__(self):
     return 'A timelapse instance.'
@@ -171,7 +182,7 @@ class timelapse(object):
   def avgbrightness(self, im, config=None):
     """
     Find the average brightness of the provided image according to the method
-    
+
     Args:
       im: A PIL image.
       config: A timelapseConfig object.  Defaults to self.config.
@@ -198,7 +209,7 @@ class timelapse(object):
     if state is None: state = self.state
 
     delta = config.targetBrightness - state.brData[-1]
-    Adj = lambda v: v * (1.0 + 1.0 * delta * config.gamma 
+    Adj = lambda v: v * (1.0 + 1.0 * delta * config.gamma
                          / config.targetBrightness)
     x = config.SSToFloat(state.currentss)
     x = Adj(x)
@@ -229,9 +240,9 @@ class timelapse(object):
     capstart = time.time()
     self.camera.capture(stream, format='jpeg')
     capend = time.time()
-    print ('Exp: %d\tFR: %f\t Capture Time: %f' 
-           % (self.camera.exposure_speed, 
-              round(float(self.camera.framerate),2), 
+    logger.info ('Exp: %d\tFR: %f\t Capture Time: %f'
+           % (self.camera.exposure_speed,
+              round(float(self.camera.framerate),2),
               round(capend-capstart,2)))
     # "Rewind" the stream to the beginning so we can read its content
     stream.seek(0)
@@ -253,7 +264,7 @@ class timelapse(object):
     cfg['h'] = 96
     cfg['gamma'] = 2.0
     init_config = timelapse_config(cfg)
-    
+
     state.brData = [0]
     state.xData = [0]
 
@@ -264,7 +275,7 @@ class timelapse(object):
 
       #Dynamically adjust ss and iso.
       self.dynamic_adjust(init_config, state)
-      print ('ss: % 10d\tx: % 6.4f br: % 4d\t' 
+      logger.info ('ss: % 10d\tx: % 6.4f br: % 4d\t'
              % (state.currentss, round(state.xData[-1], 4), round(state.brData[-1], 4)))
       if state.xData[-1] >= 1.0:
         if killtoken == True:
@@ -314,7 +325,7 @@ class timelapse(object):
     tmpl = 'SS: % 10d\tX: % 8.3f\tBR: % 4d\tShots: % 5d'
     state = self.state
     x = self.config.SSToFloat(state.currentss)
-    print tmpl % (state.currentss, round(x,2), state.lastbr, state.shots_taken)
+    logger.info (tmpl % (state.currentss, round(x,2), state.lastbr, state.shots_taken))
 
   def run_timelapse(self, config=None, state=None):
     """
@@ -330,14 +341,14 @@ class timelapse(object):
 ##    self.socket = self.context.socket(zmq.PUB)
 ##    self.socket.bind("tcp://*:5556")
 
-    while ((elapsed < config.maxtime or config.maxtime == -1) 
+    while ((elapsed < config.maxtime or config.maxtime == -1)
            and (state.shots_taken < config.maxshots
                 or config.maxshots == -1)):
       loopstart = time.time()
       dtime = subprocess.check_output(['date', '+%y%m%d_%T']).strip()
       dtime = dtime.replace(':', '.')
       #Broadcast options for this picture on zmq.
-      command='0 shoot {} {} {} {}'.format(config.w, config.h, 
+      command='0 shoot {} {} {} {}'.format(config.w, config.h,
                                            state.currentss, dtime)
 ##      self.socket.send(command)
 
@@ -374,7 +385,7 @@ class timelapse(object):
 ##    while True:
 ##      command = socket.recv()
 ##      command = command.split(" ")
-##      print "Message recieved: " + str(command)
+##      logger.info "Message recieved: " + str(command)
 ##      if command[1] == "quit":
 ##        break
 ##      elif command[1] == "shoot":
