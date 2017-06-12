@@ -1,0 +1,25 @@
+-- RTC ds1307
+References:
+https://www.raspberrypi.org/forums/viewtopic.php?f=66&t=125003
+http://spellfoundry.com/sleepy-pi/setting-up-the-real-time-clock-on-raspbian-jessie/
+
+1. add the "dtoverlay=i2c-rtc,<chipset>" line in the /boot/config.txt file, as per your description
+2. comment out the if-then statement in the /lib/udev/rwclock-set file:
+
+if [ -e /run/systemd/system ] ; then
+    exit 0
+fi
+
+TO
+
+#if [ -e /run/systemd/system ] ; then
+#    exit 0
+#fi
+
+sudo systemctl stop ntp.service
+sudo systemctl disable ntp.service
+
+sudo systemctl stop fake-hwclock.service
+sudo systemctl disable fake-hwclock.service
+
+
