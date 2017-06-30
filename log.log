@@ -16,10 +16,11 @@ TO
 #    exit 0
 #fi
 
-sudo systemctl stop ntp.service
-sudo systemctl disable ntp.service
+<<Ignore following section - superceded>>
+  sudo systemctl stop ntp.service
+  sudo systemctl disable ntp.service
 
-sudo systemctl stop fake-hwclock.service
-sudo systemctl disable fake-hwclock.service
-
+  sudo systemctl stop fake-hwclock.service
+  sudo systemctl disable fake-hwclock.service
+<<end>>
 
