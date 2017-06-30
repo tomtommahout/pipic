@@ -24,3 +24,6 @@ TO
   sudo systemctl disable fake-hwclock.service
 <<end>>
 
+WiFi Channel - potential fix
+
+https://www.raspberrypi.org/forums/viewtopic.php?f=36&t=138730&start=50
