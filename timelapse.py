@@ -64,7 +64,7 @@ class timelapse_config(object):
     # Note: these should depend on camera model...
     self.max_fr = config_map.get('minfr', 15)
     self.min_fr = config_map.get('maxfr', 1)
-    
+
     # Dynamic adjustment settings.
     self.brightwidth = config_map.get('brightwidth', 2)
     self.gamma = config_map.get('gamma', 0.2)
