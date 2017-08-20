@@ -41,7 +41,7 @@ def wait():
     # Calculate the delay to the start of the next hour
     next_quarter = (datetime.now() + timedelta(minutes=15)).replace(
         second=0, microsecond=0)
-    delay = (next_quarter - datetime.now()).seconds
+    delay = ((next_quarter - datetime.now()).seconds) + 60
     sleep(delay)
 
 while i == 1:

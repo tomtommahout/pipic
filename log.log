@@ -27,3 +27,6 @@ TO
 WiFi Channel - potential fix
 
 https://www.raspberrypi.org/forums/viewtopic.php?f=36&t=138730&start=50
+
+9-7-2017
+Change filename is hostapdstart.sh to startup.py
